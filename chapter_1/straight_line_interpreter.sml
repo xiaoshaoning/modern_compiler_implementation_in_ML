@@ -11,6 +11,8 @@ datatype statement = compound_statement of statement * statement
                    | operation_expression of expression * binary_operator * expression
                    | sequence_expression of statement * expression;
 
+
+(* a := 5+3; b:= (print(a, a-1), 10*a); print(b) *)
 val my_program = compound_statement(
                    assignment_statement("a",
                      operation_expression(number_expression(5),
@@ -23,3 +25,5 @@ val my_program = compound_statement(
                        operation_expression(number_expression(10), times,
                        id_expression("a")))),
                        print_statement([id_expression("b")])));
+
+
