@@ -1,3 +1,9 @@
+(* Implement a simple program analyzer and interpreter for the straight-line
+* programming language. This exercise serves as an introduction to environments;
+* to abstract syntax; to recursion over tree data structures, useful in many
+* parts of a compiler; and to a functional style of programming without
+* assignment statements.*)
+
 type id = string;
 
 datatype binary_operator = plus | minus | times | divide;
@@ -60,10 +66,6 @@ fun statement_interprete(my_statement:statement, e:table) =
                                   )
                              end
 
-                       (*    (print(Int.toString(#1(expression_interprete(hd(my_expression),
-                       *    e)));
-                       *    statement_interprete(print_statement(tl(my_expression)),
-                       *    e); e) *)
 and expression_interprete(my_expression:expression, e:table) =
     case my_expression of id_expression(my_id) => (lookup(e, my_id), e)
                        | number_expression(my_number) => (my_number, e)
