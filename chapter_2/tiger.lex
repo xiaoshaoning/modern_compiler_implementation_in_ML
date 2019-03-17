@@ -1,20 +1,28 @@
-type pos = int
-type lexresult = Tokens.token
+type pos = int;
+type lexresult = Tokens.token;
+type ('a, 'b) token = ('a, 'b) Tokens.token;
+val lineNum = ErrorMsg.lineNum;
+val linePos = ErrorMsg.linePos;
+fun err(p1,p2) = ErrorMsg.error p1;
 
-val lineNum = ErrorMsg.lineNum
-val linePos = ErrorMsg.linePos
-fun err(p1,p2) = ErrorMsg.error p1
+fun eof() =
+    let
+        val pos = hd(!linePos)
+    in
+        Tokens.EOF(pos,pos)
+    end;
 
-fun eof() = let val pos = hd(!linePos) in Tokens.EOF(pos,pos) end
-
-%%
-digital=[0-9]+;
+ %%
+%header (functor TigerLexFun(structure Tokens: Tiger_TOKENS));
+%s COMMENT;
+digit = [0-9];
+digits = {digit}+;
 id=[a-zA-Z][a-zA-Z_0-9]*;
-string="[a-zA-Z0-9\_\-\\]*"
-%%
-%s COMMENT
+SPACE=[\ \t\b\f\r]+;
+
 %%
 <INITIAL>\n	         => (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
+<INITIAL>SPACE       => (continue());
 <INITIAL>","	     => (Tokens.COMMA(yypos,yypos+1));
 <INITIAL>type        => (Tokens.TYPE(yypos, yypos+4));
 <INITIAL>var         => (Tokens.VAR(yypos, yypos+3));
@@ -42,22 +50,22 @@ string="[a-zA-Z0-9\_\-\\]*"
 <INITIAL>"<"         => (Tokens.LT(yypos, yypos+1));
 <INITIAL>"<>"        => (Tokens.NEQ(yypos, yypos+2));
 <INITIAL>"="         => (Tokens.EQ(yypos, yypos+1));
+<INITIAL>":="        => (Tokens.ASSIGN(yypos, yypos+2));
 <INITIAL>"/"         => (Tokens.DIVIDE(yypos, yypos+1));
-<INITIAL>"\*"        => (Tokens.TIEMS(yypos, yypos+2));
+<INITIAL>"*"         => (Tokens.TIEMS(yypos, yypos+1));
 <INITIAL>"-"         => (Tokens.MINUS(yypos, yypos+1));
-<INITIAL>"\+"        => (Tokens.PLUS(yypos, yypos+1));
-<INITIAL>"\."        => (Tokens.DOT(yypos, yypos+1));
-<INITIAL>"\{"        => (Tokens.LBRACE(yypos, yypos+1));
-<INITIAL>"\}"        => (Tokens.RBRACE(yypos, yypos+1));
-<INITIAL>"\["        => (Tokens.LBRACK(yypos, yypos+1));
-<INITIAL>"\]"        => (Tokens.RBRACK(yypos, yypos+1));
+<INITIAL>"+"         => (Tokens.PLUS(yypos, yypos+1));
+<INITIAL>"."         => (Tokens.DOT(yypos, yypos+1));
+<INITIAL>"{"         => (Tokens.LBRACE(yypos, yypos+1));
+<INITIAL>"}"         => (Tokens.RBRACE(yypos, yypos+1));
+<INITIAL>"["         => (Tokens.LBRACK(yypos, yypos+1));
+<INITIAL>"]"         => (Tokens.RBRACK(yypos, yypos+1));
 <INITIAL>"("         => (Tokens.LPAREN(yypos, yypos+1));
 <INITIAL>")"         => (Tokens.RPAREN(yypos, yypos+1));
 <INITIAL>";"         => (Tokens.SEMICOLON(yypos, yypos+1));
 <INITIAL>":"         => (Tokens.COLON(yypos, yypos+1));
 <INITIAL>","         => (Tokens.COMMA(yypos, yypos+1));
-<INITIAL>string      => (Tokens.string(yytext, yypos+1, yypos+size(yytext)-1));
-<INITIAL>int 	     => (Tokens.INT(Int.fromString(yytext), yypos, yypos + size(yytext));
+<INITIAL>digits      => (Tokens.INT(Int.fromString(yytext), yypos, yypos + size(yytext));
 <INITIAL>id          => (Tokens.ID(yytext, yypos, yypos+size(yytext)));
 <INITIAL>"\n"        => (eof());
 <INITIAL>.           => (ErrorMsg.error yypos ("illegal character " ^ yytext); continue());
