@@ -1,0 +1,105 @@
+%%
+%term
+    EOF
+  | ID of string
+  | INT of int | STRING of string
+  | COMMA | COLON | SEMICOLON | LPAREN | RPAREN | LBRACK | RBRACK
+  | LBRACE | RBRACE | DOT
+  | PLUS | MINUS | TIMES | DIVIDE | EQ | NEQ | LT | LE | GT | GE
+  | AND | OR | ASSIGN
+  | ARRAY | IF | THEN | ELSE | WHILE | FOR | TO | DO | LET | IN | END | OF
+  | BREAK | NIL
+  | FUNCTION | VAR | TYPE
+  | UMINUS
+
+%nonterm  exp | program | decs | dec | tydec | typeid | ty | tyfields | lvalue | fundec | vardec | explist | expseq | explist_prime
+
+%pos int
+%verbose
+%start program
+%eop EOF
+%noshift EOF
+
+%name Tiger
+
+%keyword WHILE FOR TO BREAK LET IN END FUNCTION VAR TYPE ARRAY IF THEN ELSE
+	DO OF NIL
+
+%prefer THEN ELSE LPAREN
+
+%value ID ("bogus")
+%value INT (1)
+%value STRING ("")
+
+%left OR
+%left AND
+%left PLUS MINUS
+%left TIMES DIVIDE
+
+%%
+
+program	: exp				                                   ()
+
+decs: LBRACE dec RBRACE                                        ()
+
+dec: tydec                                                     ()
+   | vardec                                                    ()
+   | fundec                                                    ()
+
+tydec: TYPE typeid EQ ty                                       ()
+typeid: ID                                                     ()
+
+ty: typeid                                                     ()
+   | LBRACE tyfields RBRACE                                    ()
+   | ARRAY OF typeid                                           ()
+
+tyfields:                                                      ()
+   | ID COLON typeid                                           ()
+
+vardec: VAR ID ASSIGN exp                                      ()
+      | VAR ID COLON typeid ASSIGN exp                         ()
+
+fundec: FUNCTION ID LPAREN tyfields RPAREN EQ exp              ()
+      | FUNCTION ID LPAREN tyfields RPAREN COLON typeid EQ exp ()
+
+lvalue: ID                                                     ()
+      | lvalue DOT ID                                          ()
+      | lvalue LBRACK exp RBRACK                               ()
+
+exp: lvalue                                                    ()
+   | NIL                                                       ()
+   | INT                                                       ()
+   | STRING                                                    ()
+   | explist                                                   ()
+   | IF exp THEN exp                                           ()
+   | IF exp THEN exp ELSE exp                                  ()
+   | UMINUS exp                                                ()
+   | exp PLUS exp                                              ()
+   | exp MINUS exp                                             ()
+   | exp TIMES exp                                             ()
+   | exp DIVIDE exp                                            ()
+   | exp EQ exp                                                ()
+   | exp NEQ exp                                               ()
+   | exp LT exp                                                ()
+   | exp LE exp                                                ()
+   | exp GT exp                                                ()
+   | exp GE exp                                                ()
+   | ID EQ ID                                                  ()
+   | ID NEQ ID                                                 ()
+   | exp AND exp                                               ()
+   | exp OR exp                                                ()
+   | ID LPAREN RPAREN                                          ()
+   | ID LPAREN expseq RPAREN                                   ()
+   | lvalue ASSIGN exp                                         ()
+   | WHILE exp DO exp                                          ()
+   | WHILE exp DO exp BREAK exp                                ()
+   | FOR ID ASSIGN exp TO exp DO exp                           ()
+   | FOR ID ASSIGN exp TO exp DO exp BREAK SEMICOLON exp       ()
+   | LET decs IN explist END                                   ()
+expseq: exp                                                    ()
+   |    exp COMMA expseq                                       ()
+
+explist_prime: exp SEMICOLON exp                               ()
+   |           exp SEMICOLON explist_prime                     ()
+
+explist: LPAREN explist_prime RPAREN                           ()
